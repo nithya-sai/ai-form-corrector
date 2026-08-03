@@ -3,89 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Biomechanics Form Corrector</title>
+    <title>AI Form Corrector</title>
     <style>
-        :root {
-            --bg-dark: #0a0908;
-            --text-main: #d4c4b7;
-            --accent-brown: #5c4033;
-            --glow: #fceabb;
-        }
         body {
-            margin: 0; padding: 0; background-color: #0a0908;
-            background-image: radial-gradient(circle at center, #1a1512 0%, #000000 100%);
-            color: #d4c4b7; font-family: 'Courier New', Courier, monospace;
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .noise-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 10;
-            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.06"/%3E%3C/svg%3E');
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
         }
-        .header {
-            text-align: center; margin-top: 40px; margin-bottom: 2rem;
-            border-bottom: 1px solid #5c4033; padding-bottom: 15px; z-index: 1;
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            box-sizing: border-box;
         }
-        h1 { font-size: 2.2rem; margin: 0 0 5px 0; color: #fceabb; text-shadow: 0 0 15px rgba(252, 234, 187, 0.2); font-weight: normal; }
-        p { font-size: 0.9rem; color: #8b7a66; margin: 0; letter-spacing: 1px; }
-        
-        /* Control Panel Styles */
-        .controls {
-            z-index: 1; margin-bottom: 30px; display: flex; flex-direction: column; align-items: center; gap: 20px;
-            background: #110e0c; padding: 25px; border: 1px solid #5c4033; border-radius: 4px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        .section {
+            margin-bottom: 25px;
+        }
+        h3 {
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            margin-top: 0;
+        }
+        video, img {
+            width: 100%;
+            border-radius: 8px;
+            background: #000;
+            margin-top: 10px;
         }
         input[type="file"] {
-            background: #0a0908; border: 1px solid #5c4033; color: #d4c4b7;
-            padding: 8px; font-family: 'Courier New', Courier, monospace; width: 100%; box-sizing: border-box;
+            width: 100%;
+            padding: 10px;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+            margin-top: 10px;
         }
-        button, .action-btn {
-            background-color: #5c4033; color: #fceabb; border: none;
-            padding: 12px 24px; cursor: pointer; font-family: 'Courier New', Courier, monospace;
-            text-transform: uppercase; letter-spacing: 2px; transition: background 0.3s;
-            text-decoration: none; font-size: 0.9rem; display: inline-block; width: 100%; box-sizing: border-box; text-align: center;
+        button {
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
         }
-        button:hover, .action-btn:hover { background-color: #8b7a66; }
-        .divider { color: #5c4033; letter-spacing: 2px; }
-        
-        .video-wrapper {
-            position: relative; padding: 8px; background: #110e0c;
-            border: 1px solid #5c4033; border-radius: 2px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px rgba(92, 64, 51, 0.3); z-index: 1;
-            margin-bottom: 50px;
+        button:hover {
+            background-color: #ff6b81;
         }
-        img { display: block; border-radius: 2px; filter: sepia(20%) contrast(115%) brightness(95%); }
+        .stats {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-    <div class="noise-overlay"></div>
-    
-    <div class="header">
-        <h1>AI Form Corrector</h1>
-        <p>Dual-Input Biomechanics Analyzer // System V3.0</p>
+
+    <h1>AI Fitness Form Corrector</h1>
+
+    <div class="container">
+        <!-- Live Camera Section (For Mobile/PC Web Browsers) -->
+        <div class="section">
+            <h3>Live Workout Camera</h3>
+            <p style="font-size: 0.9rem; color: #aaa;">Prop up your phone and start tracking your form in real-time.</p>
+            <button id="start-camera">Start Live Camera</button>
+            <video id="webcam" autoplay playsinline muted style="display:none;"></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+            <!-- Processed feed preview or stats display -->
+            <div id="live-stats" class="stats" style="display:none;">
+                Reps: <span id="rep-count">0</span> | Form: <span id="form-status">Ready</span>
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+
+        <!-- Video Upload Section -->
+        <div class="section">
+            <h3>Upload Recorded Video</h3>
+            <form action="/upload" method="POST" enctype="multipart/form-data">
+                <input type="file" name="file" accept="video/*" required>
+                <button type="submit">Analyze Uploaded Video</button>
+            </form>
+        </div>
     </div>
 
-    <!-- Interface Controls -->
-    <div class="controls">
-        <a href="/?mode=live" class="action-btn">Initialize Live Webcam</a>
+    <script>
+        const startCameraButton = document.getElementById('start-camera');
+        const webcamElement = document.getElementById('webcam');
+        const liveStats = document.getElementById('live-stats');
         
-        <div class="divider">— OR —</div>
-        
-        <form method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
-            <input type="file" name="file" accept="video/mp4,video/x-m4v,video/*" required>
-            <button type="submit">Analyze Uploaded Video</button>
-        </form>
-    </div>
-    
-    <!-- Render the appropriate video stream based on user choice -->
-    {% if video_type == 'live' %}
-    <div class="video-wrapper">
-        <img src="{{ url_for('live_feed') }}" width="640" height="480">
-    </div>
-    {% elif video_type == 'upload' and video_file %}
-    <div class="video-wrapper">
-        <img src="{{ url_for('video_feed', filename=video_file) }}" width="640" height="480">
-    </div>
-    {% endif %}
+        let streamInterval = null;
+
+        startCameraButton.addEventListener('click', async () => {
+            try {
+                // Request front or rear camera on mobile (preferring environment/rear camera for workouts)
+                const constraints = {
+                    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
+                };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                webcamElement.srcObject = stream;
+                webcamElement.style.display = 'block';
+                liveStats.style.display = 'block';
+                startCameraButton.style.display = 'none';
+
+                // Optional: Frame capture loop to send frames to backend via fetch/websockets if desired
+                // We will hook this up to your Flask backend route next!
+            } catch (err) {
+                alert("Camera access denied or not supported on this browser/device: " + err);
+            }
+        });
+    </script>
 </body>
 </html>
+
+<script>
+    const startCameraButton = document.getElementById('start-camera');
+    const webcamElement = document.getElementById('webcam');
+    const liveStats = document.getElementById('live-stats');
+    const repCountSpan = document.getElementById('rep-count');
+    const formStatusSpan = document.getElementById('form-status');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    
+    let processingInterval = null;
+
+    startCameraButton.addEventListener('click', async () => {
+        try {
+            // Request front/rear camera optimized for mobile screens
+            const constraints = {
+                video: { facingMode: "user", width: { ideal: 480 }, height: { ideal: 640 } }
+            };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            webcamElement.srcObject = stream;
+            webcamElement.style.display = 'block';
+            liveStats.style.display = 'block';
+            startCameraButton.style.display = 'none';
+
+            // Start sending frames to backend every 200ms (~5 frames per second for smooth web traffic)
+            processingInterval = setInterval(sendFrameToBackend, 200);
+
+        } catch (err) {
+            alert("Camera access denied or not supported on this device: " + err);
+        }
+    });
+
+    function sendFrameToBackend() {
+        if (webcamElement.readyState === webcamElement.HAVE_ENOUGH_DATA) {
+            canvas.width = webcamElement.videoWidth;
+            canvas.height = webcamElement.videoHeight;
+            
+            // Draw current video frame onto the canvas
+            context.drawImage(webcamElement, 0, 0, canvas.width, canvas.height);
+            
+            // Convert canvas to a compressed base64 image string
+            const imageData = canvas.toDataURL('image/jpeg', 0.6);
+
+            // Send to Flask backend
+            fetch('/process_frame', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: imageData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update your webpage dynamically with the response from Python
+                repCountSpan.textContent = data.reps;
+                formStatusSpan.textContent = data.form;
+            })
+            .catch(error => {
+                console.error('Error sending frame:', error);
+            });
+        }
+    }
+</script>
