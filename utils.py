@@ -6,7 +6,7 @@ import mediapipe as mp
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-# Global variables to track rep state across frames
+# Global variables to track rep state across live frames
 counter = 0
 stage = None
 
@@ -42,15 +42,11 @@ def analyze_frame_with_mediapipe(frame):
     try:
         landmarks = results.pose_landmarks.landmark
         
-        # ==========================================
-        # PASTE YOUR JOINT EXTRACTION & COUNTER LOGIC HERE
-        # ==========================================
-        # Example using calculate_angle (adjust landmarks to your exercise):
+        # Add your exercise angle check and counter logic here, for example:
         # shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
         # elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x, landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
         # wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x, landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
         # angle = calculate_angle(shoulder, elbow, wrist)
-        #
         # if angle > 160:
         #     stage = "down"
         # if angle < 30 and stage == 'down':
