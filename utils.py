@@ -24,4 +24,4 @@ def analyze_frame_with_mediapipe(frame):
     current_reps = 0
     form_message = "Good Form"
     
-    return current_reps, form_message
+    return current_reps, form_messagegit
