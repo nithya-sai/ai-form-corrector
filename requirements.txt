@@ -1,5 +1,5 @@
 Flask
 opencv-python
 numpy
-mediapipe==0.10.33
+mediapipe==0.10.9
 gunicorn
