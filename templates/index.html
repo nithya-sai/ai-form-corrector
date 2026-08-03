@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Biomechanics Form Corrector</title>
+    <style>
+        :root {
+            --bg-dark: #0a0908;
+            --text-main: #d4c4b7;
+            --accent-brown: #5c4033;
+            --glow: #fceabb;
+        }
+        body {
+            margin: 0; padding: 0; background-color: #0a0908;
+            background-image: radial-gradient(circle at center, #1a1512 0%, #000000 100%);
+            color: #d4c4b7; font-family: 'Courier New', Courier, monospace;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+        .noise-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.06"/%3E%3C/svg%3E');
+        }
+        .header {
+            text-align: center; margin-top: 40px; margin-bottom: 2rem;
+            border-bottom: 1px solid #5c4033; padding-bottom: 15px; z-index: 1;
+        }
+        h1 { font-size: 2.2rem; margin: 0 0 5px 0; color: #fceabb; text-shadow: 0 0 15px rgba(252, 234, 187, 0.2); font-weight: normal; }
+        p { font-size: 0.9rem; color: #8b7a66; margin: 0; letter-spacing: 1px; }
+        
+        /* Control Panel Styles */
+        .controls {
+            z-index: 1; margin-bottom: 30px; display: flex; flex-direction: column; align-items: center; gap: 20px;
+            background: #110e0c; padding: 25px; border: 1px solid #5c4033; border-radius: 4px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        input[type="file"] {
+            background: #0a0908; border: 1px solid #5c4033; color: #d4c4b7;
+            padding: 8px; font-family: 'Courier New', Courier, monospace; width: 100%; box-sizing: border-box;
+        }
+        button, .action-btn {
+            background-color: #5c4033; color: #fceabb; border: none;
+            padding: 12px 24px; cursor: pointer; font-family: 'Courier New', Courier, monospace;
+            text-transform: uppercase; letter-spacing: 2px; transition: background 0.3s;
+            text-decoration: none; font-size: 0.9rem; display: inline-block; width: 100%; box-sizing: border-box; text-align: center;
+        }
+        button:hover, .action-btn:hover { background-color: #8b7a66; }
+        .divider { color: #5c4033; letter-spacing: 2px; }
+        
+        .video-wrapper {
+            position: relative; padding: 8px; background: #110e0c;
+            border: 1px solid #5c4033; border-radius: 2px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px rgba(92, 64, 51, 0.3); z-index: 1;
+            margin-bottom: 50px;
+        }
+        img { display: block; border-radius: 2px; filter: sepia(20%) contrast(115%) brightness(95%); }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    
+    <div class="header">
+        <h1>AI Form Corrector</h1>
+        <p>Dual-Input Biomechanics Analyzer // System V3.0</p>
+    </div>
+
+    <!-- Interface Controls -->
+    <div class="controls">
+        <a href="/?mode=live" class="action-btn">Initialize Live Webcam</a>
+        
+        <div class="divider">— OR —</div>
+        
+        <form method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
+            <input type="file" name="file" accept="video/mp4,video/x-m4v,video/*" required>
+            <button type="submit">Analyze Uploaded Video</button>
+        </form>
+    </div>
+    
+    <!-- Render the appropriate video stream based on user choice -->
+    {% if video_type == 'live' %}
+    <div class="video-wrapper">
+        <img src="{{ url_for('live_feed') }}" width="640" height="480">
+    </div>
+    {% elif video_type == 'upload' and video_file %}
+    <div class="video-wrapper">
+        <img src="{{ url_for('video_feed', filename=video_file) }}" width="640" height="480">
+    </div>
+    {% endif %}
+</body>
+</html>
