@@ -1,159 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Form Corrector</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            box-sizing: border-box;
-        }
-        .section {
-            margin-bottom: 25px;
-        }
-        h3 {
-            border-bottom: 2px solid #333;
-            padding-bottom: 5px;
-            margin-top: 0;
-        }
-        video, img {
-            width: 100%;
-            border-radius: 8px;
-            background: #000;
-            margin-top: 10px;
-        }
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            background: #2a2a2a;
-            border: 1px solid #444;
-            color: white;
-            border-radius: 6px;
-            box-sizing: border-box;
-            margin-top: 10px;
-        }
-        button {
-            background-color: #ff4757;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #ff6b81;
-        }
-        .stats {
-            margin-top: 15px;
-            font-size: 1.2rem;
-            background: #2a2a2a;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-
-    <h1>AI Fitness Form Corrector</h1>
-
-    <div class="container">
-        <!-- Live Camera Section (For Mobile/PC Web Browsers) -->
-        <div class="section">
-            <h3>Live Workout Camera</h3>
-            <p style="font-size: 0.9rem; color: #aaa;">Prop up your phone and start tracking your form in real-time.</p>
-            <button id="start-camera">Start Live Camera</button>
-            <video id="webcam" autoplay playsinline muted style="display:none;"></video>
-            <canvas id="canvas" style="display:none;"></canvas>
-            <!-- Processed feed preview or stats display -->
-            <div id="live-stats" class="stats" style="display:none;">
-                Reps: <span id="rep-count">0</span> | Form: <span id="form-status">Ready</span>
-            </div>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
-
-        <!-- Video Upload Section -->
-        <div class="section">
-            <h3>Upload Recorded Video</h3>
-            <form action="/upload" method="POST" enctype="multipart/form-data">
-                <input type="file" name="file" accept="video/*" required>
-                <button type="submit">Analyze Uploaded Video</button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        const startCameraButton = document.getElementById('start-camera');
-        const webcamElement = document.getElementById('webcam');
-        const liveStats = document.getElementById('live-stats');
-        
-        let streamInterval = null;
-
-        startCameraButton.addEventListener('click', async () => {
-            try {
-                // Request front or rear camera on mobile (preferring environment/rear camera for workouts)
-                const constraints = {
-                    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
-                };
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                webcamElement.srcObject = stream;
-                webcamElement.style.display = 'block';
-                liveStats.style.display = 'block';
-                startCameraButton.style.display = 'none';
-
-                // Optional: Frame capture loop to send frames to backend via fetch/websockets if desired
-                // We will hook this up to your Flask backend route next!
-            } catch (err) {
-                alert("Camera access denied or not supported on this browser/device: " + err);
-            }
-        });
-    </script>
-</body>
-</html>
-
+import os
 import base64
 import numpy as np
 import cv2
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+from werkzeug.utils import secure_filename
+from utils import analyze_frame_with_mediapipe  # Imports your core AI logic from utils.py
 
-# ==========================================
-        # 4. INSERT YOUR AI / MEDIAPIPE LOGIC HERE
-        # ==========================================
+app = Flask(__name__)
+
+# Configure upload folder for recorded videos
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Route 1: Handle Pre-recorded Video Uploads
+@app.route('/upload', methods=['POST'])
+def upload_video():
+    if 'file' not in request.files:
+        return redirect(request.url)
+    file = request.files['file']
+    if file.filename == '':
+        return redirect(request.url)
+    
+    if file:
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
         
-        # Call your existing function (example name: process_single_frame or your rep counter class)
-        current_reps, form_message = analyze_frame_with_mediapipe(frame)
+        # Here you can process your uploaded video file if needed
+        return render_template('index.html', message="Video processed successfully!")
 
-        return jsonify({
-            "status": "success",
-            "reps": current_reps,
-            "form": form_message
-        })
-
+# Route 2: Handle Real-Time Frames from Mobile/PC Browser Cameras
 @app.route('/process_frame', methods=['POST'])
 def process_frame():
     try:
@@ -163,28 +44,20 @@ def process_frame():
         if not image_data:
             return jsonify({"status": "error", "message": "No image data received"}), 400
 
-        # 1. Strip the base64 header (e.g., 'data:image/jpeg;base64,')
+        # 1. Strip the base64 header and convert to numpy array
         encoded_data = image_data.split(',')[1]
-        
-        # 2. Convert base64 string to numpy array (bytes)
         nparr = np.frombuffer(base64.b64decode(encoded_data), np.uint8)
         
-        # 3. Decode into an OpenCV frame matrix
+        # 2. Decode into an OpenCV frame matrix
         frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         
         if frame is None:
             return jsonify({"status": "error", "message": "Failed to decode frame"}), 400
 
-        # ==========================================
-        # 4. INSERT YOUR AI / MEDIAPIPE LOGIC HERE
-        # ==========================================
-        # Example: 
-        # reps, form_status = your_form_correction_function(frame)
-        
-        # Placeholder feedback for now:
-        current_reps = 0  # Hook this up to your counter variable
-        form_message = "Keep going!"
+        # 3. Pass the live frame through your MediaPipe/AI model
+        current_reps, form_message = analyze_frame_with_mediapipe(frame)
 
+        # 4. Return live feedback back to the mobile browser
         return jsonify({
             "status": "success",
             "reps": current_reps,
@@ -194,3 +67,6 @@ def process_frame():
     except Exception as e:
         print(f"Error processing frame: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
